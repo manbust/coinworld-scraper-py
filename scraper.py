@@ -58,13 +58,11 @@ def scrape_trending_tokens(chain: str) -> list:
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.binary_location = "/usr/bin/google-chrome-stable" 
     options.add_argument("--window-size=1920,1080")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
     
-    service = ChromeService(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(options=options)
 
     # Apply stealth settings
     stealth(driver,
@@ -90,7 +88,7 @@ def scrape_trending_tokens(chain: str) -> list:
         
         rows = driver.find_elements(By.CSS_SELECTOR, "a.ds-dex-table-row")
         
-        for row in rows[:20]: # Limit to top 10
+        for row in rows[:20]: # Limit to top 20
             try:
                 # Helper to safely get text
                 def get_text(selector):
@@ -104,15 +102,23 @@ def scrape_trending_tokens(chain: str) -> list:
 
                 price_change_h24_text = get_text('.ds-dex-table-row-col-price-change-h24')
                 
+                # Scrape logo URL safely
+                logo_url = ''
+                try:
+                    logo_el = row.find_element(By.CSS_SELECTOR, "img.ds-dex-table-row-token-icon-img")
+                    logo_url = logo_el.get_attribute('src')
+                except NoSuchElementException:
+                    pass # Silently fail if logo is not found
+
                 token_data = {
                     "id": pair_address,
                     "tokenAddress": pair_address,
                     "name": get_text('.ds-dex-table-row-base-token-name-text'),
                     "symbol": get_text('.ds-dex-table-row-base-token-symbol'),
+                    "logoUrl": logo_url,
                     "priceUsd": parse_currency(get_text('.ds-dex-table-row-col-price')),
                     "pairAge": get_text('.ds-dex-table-row-col-pair-age'),
                     "volume": { "h24": parse_currency(get_text('.ds-dex-table-row-col-volume')) },
-                    # Fix: Remove commas from price_change_h24_text before converting to float
                     "priceChange": { "h24": float(price_change_h24_text.replace('%', '').replace(',', '')) if price_change_h24_text else 0.0 },
                     "marketCap": parse_currency(get_text('.ds-dex-table-row-col-market-cap')),
                 }

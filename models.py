@@ -16,6 +16,7 @@ class Token(BaseModel):
     tokenAddress: str
     name: str
     symbol: str
+    logoUrl: str
     marketCap: float
     priceUsd: float
     volume: Volume
