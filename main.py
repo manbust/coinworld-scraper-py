@@ -10,16 +10,30 @@ from scraper import scrape_trending_tokens
 
 load_dotenv()
 
+# --- NEW: Read allowed origins from environment variables ---
+# We'll set this in Render's dashboard.
+# It should be a comma-separated string like:
+# "http://localhost:3000,https://your-production-site.com"
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',')]
+
+# If no origins are specified, default to a safe value or log a warning.
+# For development, you might want a default:
+if not allowed_origins_str:
+    print("WARNING: ALLOWED_ORIGINS environment variable not set. Defaulting to localhost.")
+    allowed_origins = ["http://localhost:3000"]
+
+
 app = FastAPI(
     title="CoinWorld Scraper API",
     description="API to scrape trending token data from Dexscreener.",
     version="1.0.0"
 )
 
-# CORS Middleware to allow requests from our Nuxt frontend
+# --- UPDATED: Use the specific list of origins ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to your domain: ["https://your-coinworld-app.com"]
+    allow_origins=allowed_origins, # Use the list we just created
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
