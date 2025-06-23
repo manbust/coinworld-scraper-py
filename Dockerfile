@@ -42,4 +42,4 @@ EXPOSE 8000
 # -w 4: Spawns 4 worker processes. Adjust based on your Render plan's CPU/RAM.
 # -k uvicorn.workers.UvicornWorker: Use Uvicorn to run the ASGI app (FastAPI).
 # -b 0.0.0.0:8000: Bind to all network interfaces on port 8000.
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "main:app"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--timeout", "120", "-b", "0.0.0.0:8000", "main:app"]
