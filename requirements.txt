@@ -5,3 +5,4 @@ selenium
 selenium-stealth
 webdriver-manager
 cachetools
+gunicorn  
